@@ -3,114 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo das Sílabas v2</title>
+    <title>Jogo das Sílabas - Memória Ativa</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #e0f2f1; margin: 0; padding: 20px; }
-        #game-container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-        
-        .image-box { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        img { max-width: 150px; max-height: 150px; border-radius: 15px; border: 3px solid #eee; }
-        
-        #sortable-list { 
-            display: flex; justify-content: center; gap: 10px; padding: 0; list-style: none; min-height: 80px; align-items: center;
-            background: #f9f9f9; border: 2px dashed #ccc; border-radius: 10px; padding: 10px;
-        }
-        
-        .silaba { 
-            background: #ff9800; color: white; padding: 15px; border-radius: 12px; cursor: grab; 
-            font-weight: bold; font-size: 1.4rem; min-width: 40px; box-shadow: 0 4px 0 #e65100;
-            user-select: none; -webkit-user-select: none;
-        }
-        
-        .silaba:active { cursor: grabbing; background: #e65100; }
-
-        button { 
-            margin-top: 25px; width: 100%; padding: 15px; font-size: 1.2rem; cursor: pointer; 
-            background: #4CAF50; color: white; border: none; border-radius: 10px; font-weight: bold;
-        }
-        
-        #feedback { margin-top: 15px; font-weight: bold; font-size: 1.1rem; min-height: 1.5em; }
+        body { font-family: sans-serif; text-align: center; background: #e0f2f1; padding: 20px; }
+        #game-container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 20px; shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .image-box { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; }
+        img { max-width: 140px; border-radius: 15px; }
+        #sortable-list { display: flex; justify-content: center; gap: 10px; padding: 15px; list-style: none; background: #f0f0f0; border-radius: 10px; min-height: 60px; }
+        .silaba { background: #ff9800; color: white; padding: 15px; border-radius: 10px; cursor: grab; font-weight: bold; font-size: 1.3rem; box-shadow: 0 4px 0 #e65100; }
+        button { margin-top: 20px; width: 100%; padding: 15px; font-size: 1.2rem; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 10px; }
+        #feedback { margin-top: 15px; font-weight: bold; min-height: 1.5em; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h2>Que palavra é esta?</h2>
-    <div class="image-box">
-        <img id="imagem-palavra" src="" alt="Carregando...">
-    </div>
-    
+    <div class="image-box"><img id="imagem-palavra" src=""></div>
     <ul id="sortable-list"></ul>
-    
     <div id="feedback"></div>
     <button onclick="verificarResposta()">VERIFICAR ✅</button>
 </div>
 
 <script>
-    // Banco de dados com imagens que funcionam (via Unsplash para teste)
     const bancoDePalavras = [
-        { silabas: ["BO", "NE", "CA"], img: "https://images.unsplash.com/photo-1558023784-f8343393cb06?w=200" },
-        { silabas: ["GA", "TO"], img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200" },
-        { silabas: ["PI", "PO", "CA"], img: "https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=200" },
-        { silabas: ["MA", "ÇÃ"], img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=200" }
+        { id: 1, silabas: ["BO", "NE", "CA"], img: "https://images.unsplash.com/photo-1558023784-f8343393cb06?w=200" },
+        { id: 2, silabas: ["GA", "TO"], img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200" },
+        { id: 3, silabas: ["PI", "PO", "CA"], img: "https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=200" },
+        { id: 4, silabas: ["MA", "ÇÃ"], img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=200" }
     ];
 
     let palavraAtual;
     const listaUI = document.getElementById('sortable-list');
     const feedbackUI = document.getElementById('feedback');
 
-    function iniciarJogo() {
-        feedbackUI.innerText = "";
+    function carregarEstadoOuNovo() {
+        const salvo = localStorage.getItem('jogo_silabas_progresso');
         
-        // Escolher palavra diferente da anterior
-        let novaPalavra;
+        if (salvo) {
+            const dados = JSON.parse(salvo);
+            palavraAtual = bancoDePalavras.find(p => p.id === dados.idPalavra);
+            montarInterface(dados.ordemSilabas);
+        } else {
+            gerarNovaPalavra();
+        }
+    }
+
+    function gerarNovaPalavra() {
+        palavraAtual = bancoDePalavras[Math.floor(Math.random() * bancoDePalavras.length)];
+        let embaralhadas;
         do {
-            novaPalavra = bancoDePalavras[Math.floor(Math.random() * bancoDePalavras.length)];
-        } while (novaPalavra === palavraAtual);
-        
-        palavraAtual = novaPalavra;
+            embaralhadas = [...palavraAtual.silabas].sort(() => Math.random() - 0.5);
+        } while (embaralhadas.join('') === palavraAtual.silabas.join(''));
+
+        salvarProgresso(embaralhadas);
+        montarInterface(embaralhadas);
+    }
+
+    function salvarProgresso(ordem) {
+        const estado = {
+            idPalavra: palavraAtual.id,
+            ordemSilabas: ordem
+        };
+        localStorage.setItem('jogo_silabas_progresso', JSON.stringify(estado));
+    }
+
+    function montarInterface(silabas) {
         document.getElementById('imagem-palavra').src = palavraAtual.img;
-        
-        // Embaralhar até que não esteja na ordem correta
-        let silabasEmbaralhadas;
-        do {
-            silabasEmbaralhadas = [...palavraAtual.silabas].sort(() => Math.random() - 0.5);
-        } while (silabasEmbaralhadas.join('') === palavraAtual.silabas.join(''));
-        
         listaUI.innerHTML = "";
-        silabasEmbaralhadas.forEach(s => {
+        silabas.forEach(s => {
             let li = document.createElement('li');
             li.className = 'silaba';
             li.innerText = s;
             listaUI.appendChild(li);
         });
 
-        // Reinicializar o Sortable
         new Sortable(listaUI, { 
             animation: 150,
-            ghostClass: 'blue-background-class'
+            onEnd: () => {
+                // Se o utilizador mover as sílabas, guardamos a nova posição
+                const novaOrdem = Array.from(listaUI.children).map(li => li.innerText);
+                salvarProgresso(novaOrdem);
+            }
         });
     }
 
     function verificarResposta() {
         const ordemAtual = Array.from(listaUI.children).map(li => li.innerText);
-        const correta = palavraAtual.silabas.join('');
-        const tentativa = ordemAtual.join('');
-
-        if (tentativa === correta) {
+        if (ordemAtual.join('') === palavraAtual.silabas.join('')) {
             feedbackUI.style.color = "green";
-            feedbackUI.innerText = "Muito bem! ✨";
-            setTimeout(iniciarJogo, 1500);
+            feedbackUI.innerText = "Correto! A carregar próxima...";
+            localStorage.removeItem('jogo_silabas_progresso'); // Limpa para a próxima ser nova
+            setTimeout(gerarNovaPalavra, 2000);
         } else {
             feedbackUI.style.color = "red";
-            feedbackUI.innerText = "Quase lá! Tenta outra ordem. 🤔";
+            feedbackUI.innerText = "Tenta outra vez!";
         }
     }
 
-    // Garante que o jogo só começa quando tudo carregar
-    window.onload = iniciarJogo;
+    window.onload = carregarEstadoOuNovo;
 </script>
-
 </body>
 </html>
