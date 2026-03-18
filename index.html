@@ -3,26 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo das Sílabas Aleatório</title>
+    <title>Jogo das Sílabas</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #f0f4f8; padding: 10px; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); max-width: 500px; width: 100%; border: 4px solid #4a90e2; }
-        .progresso { color: #4a90e2; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
-        .imagem-container { position: relative; margin-bottom: 20px; height: 180px; display: flex; justify-content: center; align-items: center; background: #f8fafc; border-radius: 20px; }
-        img { max-height: 150px; max-width: 100%; border-radius: 15px; transition: all 0.4s; }
-        .feedback-visual { position: absolute; font-size: 6rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 10; }
-        
-        .caixa-silabas { 
-            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; min-height: 80px; padding: 20px;
-            border: 3px dashed #cbd5e0; border-radius: 20px; background: white;
-        }
-        .silaba { 
-            padding: 15px 22px; background: #4a90e2; color: white; font-weight: bold; 
-            font-size: 1.5rem; border-radius: 15px; cursor: grab; user-select: none;
-            box-shadow: 0 5px 0 #2b6cb0; margin: 5px;
-        }
+        body { font-family: sans-serif; background: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; }
+        .imagem-container { background: #eee; border-radius: 15px; margin-bottom: 20px; padding: 10px; min-height: 150px; }
+        img { max-height: 140px; max-width: 100%; }
+        .caixa-silabas { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 20px 0; min-height: 60px; }
+        .silaba { padding: 12px 20px; background: #4a90e2; color: white; font-weight: bold; border-radius: 10px; cursor: move; }
+        .correto { background: #28a745 !important; animation: pulse 0.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        #btn-proximo { display: none; padding: 15px 30px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
 
-        .acertou img { transform: scale(0.8); filter: grayscale(100%); opacity: 0.3; }
-        .acertou .feedback-visual { opacity: 1; color: #48bb78; }
-        .silaba.correto { background-color: #48bb78; box-shadow: 0 5px 0 #2f855a; animation: pisca
+<div class="card">
+    <div id="contador" style="font-size: 0.8rem; color: #888;"></div>
+    <div class="imagem-container"><img src="" id="img-tarefa"></div>
+    <div id="caixa" class="caixa-silabas"></div>
+    <button id="btn-proximo">PRÓXIMO ➡️</button>
+</div>
+
+<script>
+    const listaOriginal = [
+        { p: "GATO", s: ["TO", "GA"], i: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
+        { p: "CASA", s: ["SA", "CA"], i: "https://cdn-icons-png.flaticon.com/512/619/619153.png" },
+        { p: "GALINHA", s: ["NHA", "GA", "LI"], i: "https://cdn-icons-png.flaticon.com/512/2002/2002633.png" },
+        { p: "BOLA", s: ["LA", "BO"], i: "https://cdn-icons-png.flaticon.com/512/280/280145.png" },
+        { p: "SAPATO", s: ["TO", "PA", "SA"], i: "https://cdn-icons-png.flaticon.com/512/241/241324.png" },
+        { p: "DADO", s: ["DO", "DA"], i: "https://cdn-icons-png.flaticon.com/512/5903/5903939.png" },
+        { p: "LOCOMOTIVA", s: ["TI", "LO", "VA", "CO", "MO"], i: "https://cdn-icons-png.flaticon.com/512/2840/2840502.png" },
+        { p: "CADERNO", s: ["NO", "CA", "DER"], i: "https://cdn-icons-png.flaticon.com/512/2232/2232688.png" },
+        { p: "TELEFONE", s: ["NE", "TE", "FO", "LE"], i: "https://cdn-icons-png.flaticon.com/512/727/727590.png" },
+        { p: "BICICLETA", s: ["TA", "BI", "CLE", "CI"], i: "https://cdn-icons-png.flaticon.com/512/2972/2972185.png" }
+    ];
+
+    let lista = [...listaOriginal].sort(() => Math.random() - 0.5);
+    let index = 0;
+
+    function iniciar() {
+        if (index >= lista.length) {
+            document.querySelector('.card').innerHTML = "<h1>🏆 FIM!</h1><button onclick='location.reload()'>Recomeçar</button>";
+            return;
+        }
+        const item = lista[index];
+        document.getElementById('img-tarefa').src = item.i;
+        document.getElementById('contador').innerText = `Palavra ${index + 1} de ${lista.length}`;
+        const caixa = document.getElementById('caixa');
+        caixa.innerHTML = '';
+        document.getElementById('btn-proximo').style.display = 'none';
+
+        item.s.forEach(s => {
+            const d = document.createElement('div');
+            d.className = 'silaba';
+            d.innerText = s;
+            caixa.appendChild(d);
+        });
+
+        new Sortable(caixa, {
+            animation: 150,
+            onEnd: () => {
+                let atual = "";
+                caixa.querySelectorAll('.silaba').forEach(s => atual += s.innerText);
+                if (atual === item.p) {
+                    caixa.querySelectorAll('.silaba').forEach(s => s.classList.add('correto'));
+                    document.getElementById('btn-proximo').style.display = 'inline-block';
+                }
+            }
+        });
+    }
+
+    document.getElementById('btn-proximo').onclick = () => { index++; iniciar(); };
+    iniciar();
+</script>
+</body>
+</html>
