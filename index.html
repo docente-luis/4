@@ -1,29 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jogo de Sílabas</title>
-  <style>
-    body { font-family: Arial; text-align: center; }
-    .container { max-width: 600px; margin: auto; }
-    img { width: 200px; height: 200px; object-fit: cover; }
-    .silabas { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
-    .silaba { padding: 10px 15px; background: #eee; border: 1px solid #ccc; cursor: grab; }
-    .dropzone { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
-    .slot { width: 60px; height: 40px; border: 2px dashed #ccc; }
-    .feedback { font-size: 20px; margin-top: 20px; }
-    button { margin-top: 20px; padding: 10px 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo das Sílabas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f8ff; padding: 20px; }
+        #game-container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        img { width: 150px; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; }
+        #sortable-list { display: flex; justify-content: center; gap: 10px; padding: 0; list-style: none; min-height: 60px; }
+        .silaba { background: #ffcc00; padding: 15px 25px; border-radius: 8px; cursor: grab; font-weight: bold; font-size: 1.2rem; border: 2px solid #e6b800; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 1rem; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; }
+        #feedback { margin-top: 15px; font-weight: bold; height: 20px; }
+    </style>
 </head>
 <body>
-<div class="container">
-  <h2>Ordena as Sílabas</h2>
-  <img id="imagem" src="" alt="imagem">
-  
-  <div class="silabas" id="silabas"></div>
-  <div class="dropzone" id="dropzone"></div>
 
-  <div class="feedback" id="feedback"></div>
-  <button onclick="verificar()">Verificar</button>
-</
+<div id="game-container">
+    <h1>Ordena as Sílabas</h1>
+    <img id="imagem-palavra" src="" alt="Imagem da palavra">
+    
+    <ul id="sortable-list"></ul>
+    
+    <div id="feedback"></div>
+    <button onclick="verificarResposta()">Verificar</button>
+</div>
+
+<script>
+    const bancoDePalavras = [
+        { silabas: ["CA", "SA"], img: "https://cdn-icons-png.flaticon.com/512/619/619153.png" },
+        { silabas: ["CA", "VA", "LO"], img: "https://cdn-icons-png.flaticon.com/512/3047/3047855.png" },
+        { silabas: ["BA", "NA", "NA"], img: "https://cdn-icons-png.flaticon.com/512/2909/2909808.png" },
+        { silabas: ["PA", "TO"], img: "https://cdn-icons-png.fl
