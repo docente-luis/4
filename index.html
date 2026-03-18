@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atividade: Formar Palavras</title>
+    <title>Jogo de Sílabas Sequencial</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #eef2f3; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        img { width: 150px; margin-bottom: 20px; border-radius: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #eef2f3; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-width: 400px; width: 100%; position: relative; }
+        
+        /* Área da imagem e feedback */
+        .imagem-container { position: relative; margin-bottom: 20px; }
+        img { width: 150px; border-radius: 10px; transition: opacity 0.3s; }
+        .feedback-visual { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         
         /* Estilo das sílabas */
         .caixa-silabas { 
@@ -30,33 +34,44 @@
             border-radius: 12px; 
             cursor: grab; 
             user-select: none;
-            elevation: 2;
+            transition: transform 0.2s, background-color 0.3s;
         }
-        .instrucao { color: #666; font-size: 0.9rem; margin-top: 10px; }
+
+        /* Estados de feedback */
+        .silaba.correto { background-color: #28a745; animation: pulse 0.5s ease-in-out; }
+        .imagem-container.acertou img { opacity: 0.3; }
+        .imagem-container.acertou .feedback-visual { opacity: 1; color: #28a745; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .instrucao { color: #666; font-size: 0.9rem; margin-top: 20px; min-height: 1.2em; }
+        #botao-proximo { display: none; margin-top: 20px; padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h3>Que animal é este?</h3>
-        <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Gato">
+        <h3>Forma a palavra</h3>
         
-        <div id="jogo" class="caixa-silabas">
-            <div class="silaba">TO</div>
-            <div class="silaba">GA</div>
+        <div class="imagem-container" id="feedback-area">
+            <img src="" alt="Imagem da atividade" id="imagem-atividade">
+            <div class="feedback-visual">✅</div>
         </div>
         
-        <p class="instrucao">Arraste as sílabas para a ordem correta!</p>
+        <div id="jogo" class="caixa-silabas"></div>
+        
+        <p class="instrucao" id="mensagem">Arraste as sílabas para a ordem correta!</p>
+        <button id="botao-proximo">Próxima Palavra ➡️</button>
     </div>
 
     <script>
-        // Ativa o arrastar na caixa de sílabas
-        const el = document.getElementById('jogo');
-        new Sortable(el, {
-            animation: 150,
-            ghostClass: 'blue-background-class'
-        });
-    </script>
-
-</body>
-</html>
+        // 1. A TUA LISTA DE ATIVIDADES (Podes adicionar mais aqui!)
+        const atividades = [
+            { 
+                palavra: "GATO", 
+                silabas: ["TO", "GA"], // Ordem misturada
+                imagem: "
