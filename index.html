@@ -3,24 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atividade de Sílabas</title>
+    <title>Atividade: Formar Palavras</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
-        .container { background: white; padding: 20px; border-radius: 15px; max-width: 500px; margin: auto; }
-        .silabas-container { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
-        .silaba { padding: 15px; background: #007bff; color: white; border-radius: 8px; cursor: grab; touch-action: none; }
-        .target { width: 100px; height: 50px; border: 2px dashed #ccc; margin: 20px auto; line-height: 50px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #eef2f3; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        img { width: 150px; margin-bottom: 20px; border-radius: 10px; }
+        
+        /* Estilo das sílabas */
+        .caixa-silabas { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            min-height: 80px; 
+            padding: 10px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+        .silaba { 
+            padding: 15px 25px; 
+            background: #4a90e2; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            border-radius: 12px; 
+            cursor: grab; 
+            user-select: none;
+            elevation: 2;
+        }
+        .instrucao { color: #666; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Forma a palavra</h2>
-        <img src="https://via.placeholder.com/150" alt="Imagem da atividade">
-        <div class="silabas-container" id="origem">
-            <div class="silaba" draggable="true">GA</div>
-            <div class="silaba" draggable="true">TO</div>
+
+    <div class="card">
+        <h3>Que animal é este?</h3>
+        <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Gato">
+        
+        <div id="jogo" class="caixa-silabas">
+            <div class="silaba">TO</div>
+            <div class="silaba">GA</div>
         </div>
-        <div class="target" id="destino">Arraste aqui</div>
+        
+        <p class="instrucao">Arraste as sílabas para a ordem correta!</p>
     </div>
+
+    <script>
+        // Ativa o arrastar na caixa de sílabas
+        const el = document.getElementById('jogo');
+        new Sortable(el, {
+            animation: 150,
+            ghostClass: 'blue-background-class'
+        });
+    </script>
+
 </body>
 </html>
