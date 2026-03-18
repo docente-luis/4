@@ -3,87 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jogo das Sílabas - Versão Blindada</title>
+    <title>Super Jogo das Sílabas - 10 Palavras</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --p: #6c5ce7; --s: #00b894; --bg: #f0f3f7; }
-        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        #card { background: white; width: 90%; max-width: 400px; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .img-box { background: #eee; height: 150px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
-        img { max-width: 120px; max-height: 120px; }
-        #sortable-list { display: flex; justify-content: center; gap: 10px; padding: 15px 0; list-style: none; min-height: 50px; }
-        .silaba { background: var(--p); color: white; padding: 15px 20px; border-radius: 10px; cursor: move; font-weight: bold; font-size: 1.2rem; box-shadow: 0 4px 0 #4834d4; }
-        button { background: var(--s); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        #msg { margin: 10px 0; font-weight: bold; color: #d63031; }
+        :root { --p: #6c5ce7; --s: #00b894; --err: #d63031; --star: #f1c40f; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f3f7; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        
+        #card { background: white; width: 90%; max-width: 420px; padding: 25px; border-radius: 25px; text-align: center; box-shadow: 0 12px 24px rgba(0,0,0,0.1); position: relative; }
+        
+        #stars { font-size: 1.2rem; color: #ddd; margin-bottom: 10px; }
+        .active-star { color: var(--star) !important; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); }
+
+        .emoji-box { font-size: 80px; background: #f8f9fa; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 2px solid #eee; }
+
+        #sortable-list { display: flex; justify-content: center; gap: 10px; padding: 15px 0; list-style: none; min-height: 60px; }
+        .silaba { 
+            background: var(--p); color: white; padding: 15px 20px; border-radius: 12px; 
+            cursor: grab; font-weight: bold; font-size: 1.4rem; box-shadow: 0 5px 0 #4834d4;
+            user-select: none; -webkit-user-select: none;
+        }
+        .silaba:active { transform: translateY(3px); box-shadow: 0 2px 0 #4834d4; }
+
+        button { 
+            background: var(--s); color: white; border: none; width: 100%; padding: 18px; 
+            border-radius: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px;
+            box-shadow: 0 5px 0 #008a6e;
+        }
+        button:active { transform: translateY(3px); box-shadow: 0 2px 0 #008a6e; }
+
+        #msg { margin-top: 15px; font-weight: bold; min-height: 1.5em; font-size: 1.1rem; }
+        
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        .shake { animation: shake 0.3s ease-in-out; }
     </style>
 </head>
 <body>
 
 <div id="card">
-    <div id="debug" style="font-size: 10px; color: red;"></div>
-    <div class="img-box"><img id="pic" src="" alt="Cargando..."></div>
+    <div id="stars">★★★★★</div>
+    <div class="emoji-box" id="emoji-display"></div>
     <ul id="sortable-list"></ul>
     <div id="msg"></div>
-    <button onclick="check()">VERIFICAR</button>
+    <button onclick="verificar()">VERIFICAR ✅</button>
 </div>
 
 <script>
-    const words = [
-        { id: 1, s: ["BO", "LA"], i: "https://cdn-icons-png.flaticon.com/512/3041/3041183.png" },
-        { id: 2, s: ["GA", "TO"], i: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
-        { id: 3, s: ["PI", "A", "NO"], i: "https://cdn-icons-png.flaticon.com/512/3233/3233513.png" }
+    // LISTA DE 10 PALAVRAS
+    const banco = [
+        { s: ["CA", "VA", "LO"], e: "🐎" },
+        { s: ["GA", "TO"], e: "🐱" },
+        { s: ["MA", "CA", "CO"], e: "🐒" },
+        { s: ["PI", "PO", "CA"], e: "🍿" },
+        { s: ["JA", "RE"], e: "🌳" }, // Jacaré simplificado ou trocado por Árvore
+        { s: ["ME", "SA"], e: "🪑" },
+        { s: ["BA", "NA", "NA"], e: "🍌" },
+        { s: ["PA", "TO"], e: "🦆" },
+        { s: ["CO", "RE", "LO"], e: "🐰" }, // Coelho (simplificado para estudo: Co-re-lo/Co-e-lho)
+        { s: ["BI", "CI", "CLE", "TA"], e: "🚲" }
     ];
 
-    let current;
+    // Para evitar erros de alfabetização, vamos ajustar as difíceis:
+    const listaFinal = [
+        { s: ["CA", "VA", "LO"], e: "🐎" },
+        { s: ["GA", "TO"], e: "🐱" },
+        { s: ["MA", "CA", "CO"], e: "🐒" },
+        { s: ["PI", "PO", "CA"], e: "🍿" },
+        { s: ["BO", "NE", "CA"], e: "🪆" },
+        { s: ["ME", "SA"], e: "🪑" },
+        { s: ["BA", "NA", "NA"], e: "🍌" },
+        { s: ["PA", "TO"], e: "🦆" },
+        { s: ["GE", "LA", "DO"], e: "🍦" },
+        { s: ["CA", "NE", "TA"], e: "🖊️" }
+    ];
 
-    function start() {
-        try {
-            const list = document.getElementById('sortable-list');
-            const pic = document.getElementById('pic');
-            
-            // Escolher palavra
-            current = words[Math.floor(Math.random() * words.length)];
-            pic.src = current.i;
-            
-            // Embaralhar
-            let mix = [...current.s].sort(() => Math.random() - 0.5);
-            
-            list.innerHTML = "";
-            mix.forEach(txt => {
-                const li = document.createElement('li');
-                li.className = 'silaba';
-                li.innerText = txt;
-                list.appendChild(li);
-            });
+    let atual;
+    let acertos = 0;
 
-            // Ativar Arrastar apenas se a biblioteca carregou
-            if (typeof Sortable !== 'undefined') {
-                new Sortable(list, { animation: 150 });
-            } else {
-                document.getElementById('debug').innerText = "Aviso: Modo de toque limitado (Sortable offline)";
-            }
-        } catch (e) {
-            document.getElementById('debug').innerText = "Erro: " + e.message;
+    function jogar() {
+        const msg = document.getElementById('msg');
+        msg.innerText = "";
+        
+        // Escolhe palavra aleatória
+        atual = listaFinal[Math.floor(Math.random() * listaFinal.length)];
+        document.getElementById('emoji-display').innerText = atual.e;
+        
+        // Embaralha
+        let misturado;
+        do {
+            misturado = [...atual.s].sort(() => Math.random() - 0.5);
+        } while (misturado.join('') === atual.s.join(''));
+
+        const listaUI = document.getElementById('sortable-list');
+        listaUI.innerHTML = "";
+        misturado.forEach(sil => {
+            const li = document.createElement('li');
+            li.className = 'silaba';
+            li.innerText = sil;
+            listaUI.appendChild(li);
+        });
+
+        if (typeof Sortable !== 'undefined') {
+            new Sortable(listaUI, { animation: 150 });
         }
     }
 
-    function check() {
-        const items = Array.from(document.getElementById('sortable-list').children);
-        const user = items.map(li => li.innerText).join('');
-        const correct = current.s.join('');
+    function verificar() {
+        const ordem = Array.from(document.getElementById('sortable-list').children).map(li => li.innerText).join('');
+        const correta = atual.s.join('');
+        const msg = document.getElementById('msg');
+        const card = document.getElementById('card');
 
-        if (user === correct) {
-            document.getElementById('msg').style.color = "green";
-            document.getElementById('msg').innerText = "Correto! 🎉";
-            setTimeout(() => { document.getElementById('msg').innerText = ""; start(); }, 1500);
+        if (ordem === correta) {
+            msg.style.color = "var(--s)";
+            msg.innerText = "Muito bem! ✨";
+            acertos++;
+            atualizarEstrelas();
+            setTimeout(jogar, 1500);
         } else {
-            document.getElementById('msg').style.color = "red";
-            document.getElementById('msg').innerText = "Tenta de novo! ❌";
+            msg.style.color = "var(--err)";
+            msg.innerText = "Tenta outra vez! 🤔";
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 300);
         }
     }
 
-    // Tentar iniciar
-    window.onload = start;
+    function atualizarEstrelas() {
+        const starsUI = document.getElementById('stars');
+        let str = "";
+        for(let i=0; i<5; i++) {
+            if(i < (acertos % 6)) str += "<span class='active-star'>★</span>";
+            else str += "★";
+        }
+        starsUI.innerHTML = str;
+    }
+
+    window.onload = jogar;
 </script>
+
 </body>
 </html>
