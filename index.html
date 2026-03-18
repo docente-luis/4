@@ -72,4 +72,45 @@
 
         function montar() {
             if (index >= lista.length) {
-                document.querySelector('.card').innerHTML = "<h1 style='color: #4a90e2;'>🏆 PARABÉNS! 🏆</h1><p>
+                document.querySelector('.card').innerHTML = "<h1 style='color: #4a90e2;'>🏆 PARABÉNS! 🏆</h1><p>Completaste o desafio das 10 palavras!</p><button onclick='location.reload()' style='padding:10px; border-radius:10px; border:none; background:#4a90e2; color:white;'>Jogar de novo</button>";
+                return;
+            }
+
+            const item = lista[index];
+            document.getElementById('contador').innerText = `DESAFIO ${index + 1} DE ${lista.length}`;
+            img.src = item.i;
+            caixa.innerHTML = '';
+            document.getElementById('area-img').classList.remove('acertou');
+            btn.style.display = 'none';
+            document.getElementById('msg').innerText = "Arraste as sílabas para formar a palavra!";
+            document.getElementById('msg').style.color = "#4a5568";
+
+            // Criar sílabas
+            item.s.forEach(s => {
+                const d = document.createElement('div');
+                d.className = 'silaba';
+                d.innerText = s;
+                caixa.appendChild(d);
+            });
+        }
+
+        new Sortable(caixa, {
+            animation: 200,
+            onEnd: () => {
+                let res = "";
+                caixa.querySelectorAll('.silaba').forEach(s => res += s.innerText);
+                if (res === lista[index].p) {
+                    caixa.querySelectorAll('.silaba').forEach(s => s.classList.add('correto'));
+                    document.getElementById('area-img').classList.add('acertou');
+                    document.getElementById('msg').innerText = "Excelente! Estás no caminho certo!";
+                    document.getElementById('msg').style.color = "#2f855a";
+                    btn.style.display = 'inline-block';
+                }
+            }
+        });
+
+        btn.onclick = () => { index++; montar(); };
+        montar();
+    </script>
+</body>
+</html>
