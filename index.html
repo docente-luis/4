@@ -1,95 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo das Sílabas</title>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #eef2f3; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; border: 3px solid #4a90e2; }
-        .imagem-container { background: #f8fafc; border-radius: 15px; margin-bottom: 15px; padding: 10px; height: 160px; display: flex; justify-content: center; align-items: center; }
-        img { max-height: 140px; border-radius: 10px; }
-        .caixa-silabas { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 20px 0; min-height: 70px; padding: 10px; border: 2px dashed #ccc; border-radius: 10px; }
-        .silaba { padding: 15px 20px; background: #4a90e2; color: white; font-weight: bold; border-radius: 12px; cursor: move; font-size: 1.3rem; box-shadow: 0 4px 0 #2b6cb0; }
-        .correto { background: #28a745 !important; box-shadow: 0 4px 0 #1e7e34 !important; }
-        #btn-proximo { display: none; padding: 15px 40px; background: #28a745; color: white; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo de Sílabas</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    .container { max-width: 600px; margin: auto; }
+    img { width: 200px; height: 200px; object-fit: cover; }
+    .silabas { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+    .silaba { padding: 10px 15px; background: #eee; border: 1px solid #ccc; cursor: grab; }
+    .dropzone { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+    .slot { width: 60px; height: 40px; border: 2px dashed #ccc; }
+    .feedback { font-size: 20px; margin-top: 20px; }
+    button { margin-top: 20px; padding: 10px 20px; }
+  </style>
 </head>
 <body>
+<div class="container">
+  <h2>Ordena as Sílabas</h2>
+  <img id="imagem" src="" alt="imagem">
+  
+  <div class="silabas" id="silabas"></div>
+  <div class="dropzone" id="dropzone"></div>
 
-<div class="card">
-    <div id="contador" style="font-weight: bold; color: #4a90e2; margin-bottom: 10px;"></div>
-    <div class="imagem-container"><img src="" id="img-tarefa"></div>
-    <div id="caixa" class="caixa-silabas"></div>
-    <p id="msg">Arraste as sílabas!</p>
-    <button id="btn-proximo">PRÓXIMO ➡️</button>
-</div>
-
-<script>
-    // Lista com palavras, sílabas e links de imagens atualizados
-    const dados = [
-        { p: "GATO", s: ["TO", "GA"], i: "https://img.icons8.com/color/200/cat.png" },
-        { p: "CASA", s: ["SA", "CA"], i: "https://img.icons8.com/color/200/home.png" },
-        { p: "GALINHA", s: ["NHA", "GA", "LI"], i: "https://img.icons8.com/color/200/chicken.png" },
-        { p: "BOLA", s: ["LA", "BO"], i: "https://img.icons8.com/color/200/football2.png" },
-        { p: "SAPATO", s: ["TO", "PA", "SA"], i: "https://img.icons8.com/color/200/sneakers.png" },
-        { p: "DADO", s: ["DO", "DA"], i: "https://img.icons8.com/color/200/dice.png" },
-        { p: "MOTA", s: ["TA", "MO"], i: "https://img.icons8.com/color/200/motorcycle.png" },
-        { p: "CADERNO", s: ["NO", "CA", "DER"], i: "https://img.icons8.com/color/200/notebook.png" },
-        { p: "TELEFONE", s: ["NE", "TE", "FO", "LE"], i: "https://img.icons8.com/color/200/phone.png" },
-        { p: "BICICLETA", s: ["TA", "BI", "CLE", "CI"], i: "https://img.icons8.com/color/200/bicycle.png" }
-    ];
-
-    // Baralhar a lista de palavras logo no início
-    let lista = dados.sort(() => Math.random() - 0.5);
-    let n = 0;
-
-    function carregar() {
-        if (n >= lista.length) {
-            document.querySelector('.card').innerHTML = "<h1>🏆 EXCELENTE!</h1><p>Completaste os 10 desafios!</p><button onclick='location.reload()' style='padding:10px 20px; border-radius:10px; cursor:pointer;'>Jogar de novo</button>";
-            return;
-        }
-
-        const item = lista[n];
-        document.getElementById('contador').innerText = `DESAFIO ${n + 1} DE ${lista.length}`;
-        document.getElementById('img-tarefa').src = item.i;
-        document.getElementById('msg').innerText = "Forma a palavra!";
-        document.getElementById('msg').style.color = "#333";
-        
-        const caixa = document.getElementById('caixa');
-        caixa.innerHTML = '';
-        document.getElementById('btn-proximo').style.display = 'none';
-
-        // Criar as sílabas
-        item.s.forEach(silaba => {
-            const div = document.createElement('div');
-            div.className = 'silaba';
-            div.innerText = silaba;
-            caixa.appendChild(div);
-        });
-
-        // Configurar o arrastar
-        new Sortable(caixa, {
-            animation: 200,
-            onEnd: function() {
-                let palavraFormada = "";
-                caixa.querySelectorAll('.silaba').forEach(el => {
-                    palavraFormada += el.innerText;
-                });
-
-                if (palavraFormada === item.p) {
-                    caixa.querySelectorAll('.silaba').forEach(el => el.classList.add('correto'));
-                    document.getElementById('msg').innerText = "CORRETO! 🎉";
-                    document.getElementById('msg').style.color = "#28a745";
-                    document.getElementById('btn-proximo').style.display = 'inline-block';
-                }
-            }
-        });
-    }
-
-    document.getElementById('btn-proximo').onclick = () => { n++; carregar(); };
-    carregar();
-</script>
-</body>
-</html>
+  <div class="feedback" id="feedback"></div>
+  <button onclick="verificar()">Verificar</button>
+</
