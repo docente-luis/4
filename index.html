@@ -3,37 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Super Jogo das Sílabas</title>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <title>Jogo das Sílabas - Versão Blindada</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --primary: #6c5ce7; --success: #00b894; --error: #d63031; --bg: #f0f3f7; --star: #f1c40f; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        
-        #game-card { background: white; width: 90%; max-width: 450px; padding: 25px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; position: relative; transition: transform 0.3s ease; }
-        
-        /* Sistema de Estrelas */
-        #stars-container { font-size: 1.5rem; color: #ccc; margin-bottom: 15px; }
-        .star.active { color: var(--star); animation: starPop 0.3s ease; }
+        :root { --p: #6c5ce7; --s: #00b894; --bg: #f0f3f7; }
+        body { font-family: sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        #card { background: white; width: 90%; max-width: 400px; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .img-box { background: #eee; height: 150px; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        img { max-width: 120px; max-height: 120px; }
+        #sortable-list { display: flex; justify-content: center; gap: 10px; padding: 15px 0; list-style: none; min-height: 50px; }
+        .silaba { background: var(--p); color: white; padding: 15px 20px; border-radius: 10px; cursor: move; font-weight: bold; font-size: 1.2rem; box-shadow: 0 4px 0 #4834d4; }
+        button { background: var(--s); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        #msg { margin: 10px 0; font-weight: bold; color: #d63031; }
+    </style>
+</head>
+<body>
 
-        .img-container { background: #f9f9f9; border-radius: 20px; padding: 20px; margin-bottom: 20px; height: 160px; display: flex; align-items: center; justify-content: center; border: 2px solid #eee; }
-        img { max-width: 140px; max-height: 140px; object-fit: contain; transition: transform 0.3s ease; }
+<div id="card">
+    <div id="debug" style="font-size: 10px; color: red;"></div>
+    <div class="img-box"><img id="pic" src="" alt="Cargando..."></div>
+    <ul id="sortable-list"></ul>
+    <div id="msg"></div>
+    <button onclick="check()">VERIFICAR</button>
+</div>
 
-        #sortable-list { display: flex; justify-content: center; gap: 12px; padding: 20px 0; list-style: none; min-height: 80px; }
-        
-        .silaba { 
-            background: var(--primary); color: white; padding: 18px 25px; border-radius: 15px; 
-            cursor: grab; font-weight: bold; font-size: 1.5rem; text-transform: uppercase;
-            box-shadow: 0 6px 0 #4834d4; transition: transform 0.1s, box-shadow 0.1s;
-            user-select: none; -webkit-user-select: none;
-        }
-        .silaba:active { transform: translateY(4px); box-shadow: 0 2px 0 #4834d4; }
-        
-        /* Class for sortable ghost */
-        .sortable-ghost { opacity: 0.3; }
-
-        .btn-check { 
-            background: var(--success); color: white; border: none; width: 100%; padding: 18px; 
-            border-radius: 15px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 10px;
-            box-shadow: 0 5px 0 #009475; transition: all 0.1s;
-        }
-        .btn-check:active { transform: translateY(3px); box-shadow
+<script>
+    const words = [
+        { id: 1, s: ["BO", "LA"], i: "https://cdn-icons-png.flaticon.com/512/3041/3041183.png" },
+        { id: 2, s: ["GA", "TO"], i: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
+        { id: 3, s: ["PI", "A", "NO"], i: "
