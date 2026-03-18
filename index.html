@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividade de Sílabas</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f0f0; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 15px; max-width: 500px; margin: auto; }
+        .silabas-container { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .silaba { padding: 15px; background: #007bff; color: white; border-radius: 8px; cursor: grab; touch-action: none; }
+        .target { width: 100px; height: 50px; border: 2px dashed #ccc; margin: 20px auto; line-height: 50px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Forma a palavra</h2>
+        <img src="https://via.placeholder.com/150" alt="Imagem da atividade">
+        <div class="silabas-container" id="origem">
+            <div class="silaba" draggable="true">GA</div>
+            <div class="silaba" draggable="true">TO</div>
+        </div>
+        <div class="target" id="destino">Arraste aqui</div>
+    </div>
+</body>
+</html>
