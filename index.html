@@ -31,4 +31,59 @@
     const words = [
         { id: 1, s: ["BO", "LA"], i: "https://cdn-icons-png.flaticon.com/512/3041/3041183.png" },
         { id: 2, s: ["GA", "TO"], i: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
-        { id: 3, s: ["PI", "A", "NO"], i: "
+        { id: 3, s: ["PI", "A", "NO"], i: "https://cdn-icons-png.flaticon.com/512/3233/3233513.png" }
+    ];
+
+    let current;
+
+    function start() {
+        try {
+            const list = document.getElementById('sortable-list');
+            const pic = document.getElementById('pic');
+            
+            // Escolher palavra
+            current = words[Math.floor(Math.random() * words.length)];
+            pic.src = current.i;
+            
+            // Embaralhar
+            let mix = [...current.s].sort(() => Math.random() - 0.5);
+            
+            list.innerHTML = "";
+            mix.forEach(txt => {
+                const li = document.createElement('li');
+                li.className = 'silaba';
+                li.innerText = txt;
+                list.appendChild(li);
+            });
+
+            // Ativar Arrastar apenas se a biblioteca carregou
+            if (typeof Sortable !== 'undefined') {
+                new Sortable(list, { animation: 150 });
+            } else {
+                document.getElementById('debug').innerText = "Aviso: Modo de toque limitado (Sortable offline)";
+            }
+        } catch (e) {
+            document.getElementById('debug').innerText = "Erro: " + e.message;
+        }
+    }
+
+    function check() {
+        const items = Array.from(document.getElementById('sortable-list').children);
+        const user = items.map(li => li.innerText).join('');
+        const correct = current.s.join('');
+
+        if (user === correct) {
+            document.getElementById('msg').style.color = "green";
+            document.getElementById('msg').innerText = "Correto! 🎉";
+            setTimeout(() => { document.getElementById('msg').innerText = ""; start(); }, 1500);
+        } else {
+            document.getElementById('msg').style.color = "red";
+            document.getElementById('msg').innerText = "Tenta de novo! ❌";
+        }
+    }
+
+    // Tentar iniciar
+    window.onload = start;
+</script>
+</body>
+</html>
