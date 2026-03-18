@@ -3,114 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo das Sílabas - Nível 2</title>
+    <title>Jogo das Sílabas - 10 Desafios</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #f0f4f8; padding: 10px; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 500px; width: 100%; }
-        .progresso { color: #aaa; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold; }
-        .imagem-container { position: relative; margin-bottom: 15px; height: 140px; display: flex; justify-content: center; align-items: center; }
-        img { max-height: 130px; border-radius: 15px; transition: all 0.3s; }
-        .feedback-visual { position: absolute; font-size: 4rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 10; }
+        .card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); max-width: 500px; width: 100%; border: 4px solid #4a90e2; }
+        .progresso { color: #4a90e2; font-size: 0.9rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .imagem-container { position: relative; margin-bottom: 20px; height: 180px; display: flex; justify-content: center; align-items: center; background: #f8fafc; border-radius: 20px; }
+        img { max-height: 150px; max-width: 100%; border-radius: 15px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .feedback-visual { position: absolute; font-size: 6rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 10; }
         
         .caixa-silabas { 
-            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; min-height: 70px; padding: 15px;
-            border: 3px dashed #e2e8f0; border-radius: 15px; background: #fdfdfd;
+            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; min-height: 80px; padding: 20px;
+            border: 3px dashed #cbd5e0; border-radius: 20px; background: white;
         }
         .silaba { 
-            padding: 12px 18px; background: #4a90e2; color: white; font-weight: bold; 
-            font-size: 1.1rem; border-radius: 10px; cursor: grab; user-select: none;
-            box-shadow: 0 4px 0 #2b6cb0; margin: 2px;
+            padding: 15px 22px; background: #4a90e2; color: white; font-weight: bold; 
+            font-size: 1.5rem; border-radius: 15px; cursor: grab; user-select: none;
+            box-shadow: 0 5px 0 #2b6cb0; margin: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
-        .acertou img { opacity: 0.15; filter: blur(2px); }
-        .acertou .feedback-visual { opacity: 1; color: #48bb78; transform: scale(1.2); }
-        .silaba.correto { background-color: #48bb78; box-shadow: 0 4px 0 #2f855a; transform: translateY(2px); }
+        .acertou img { transform: scale(0.8) rotate(-5deg); filter: grayscale(100%); opacity: 0.3; }
+        .acertou .feedback-visual { opacity: 1; color: #48bb78; transform: scale(1.1); text-shadow: 0 0 20px rgba(72,187,120,0.4); }
+        .silaba.correto { background-color: #48bb78; box-shadow: 0 5px 0 #2f855a; animation: pisca 0.5s ease infinite alternate; }
         
+        @keyframes pisca {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
         #btn-proximo { 
-            display: none; margin-top: 20px; padding: 15px 40px; background: #48bb78; 
-            color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 1.2rem; font-weight: bold;
-            box-shadow: 0 4px 0 #2f855a;
+            display: none; margin-top: 25px; padding: 18px 45px; background: #48bb78; 
+            color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 1.3rem; font-weight: bold;
+            box-shadow: 0 6px 0 #2f855a; transition: 0.2s;
         }
-        #btn-proximo:active { transform: translateY(4px); box-shadow: none; }
-    </style>
-</head>
-<body>
-
-    <div class="card">
-        <div class="progresso" id="contador">Carregando...</div>
-        <div class="imagem-container" id="area-img">
-            <img src="" id="img-tarefa">
-            <div class="feedback-visual">🌟</div>
-        </div>
-        
-        <div id="caixa" class="caixa-silabas"></div>
-        
-        <p id="msg" style="color: #4a5568; font-weight: 500;">Ordena as sílabas corretamente!</p>
-        <button id="btn-proximo">PRÓXIMO ➡️</button>
-    </div>
-
-    <script>
-        // LISTA DE 10 PALAVRAS (Mistura de 2, 3 e 4 sílabas)
-        const lista = [
-            { p: "GATO", s: ["TO", "GA"], i: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
-            { p: "CASA", s: ["SA", "CA"], i: "https://cdn-icons-png.flaticon.com/512/619/619153.png" },
-            { p: "GALINHA", s: ["NHA", "GA", "LI"], i: "https://cdn-icons-png.flaticon.com/512/2002/2002633.png" },
-            { p: "BOLA", s: ["LA", "BO"], i: "https://cdn-icons-png.flaticon.com/512/280/280145.png" },
-            { p: "SAPATO", s: ["TO", "PA", "SA"], i: "https://cdn-icons-png.flaticon.com/512/241/241324.png" },
-            { p: "DADO", s: ["DO", "DA"], i: "https://cdn-icons-png.flaticon.com/512/5903/5903939.png" },
-            { p: "LOCOMOTIVA", s: ["TI", "LO", "VA", "CO", "MO"], i: "https://cdn-icons-png.flaticon.com/512/2840/2840502.png" },
-            { p: "CADERNO", s: ["NO", "CA", "DER"], i: "https://cdn-icons-png.flaticon.com/512/2232/2232688.png" },
-            { p: "TELEFONE", s: ["NE", "TE", "FO", "LE"], i: "https://cdn-icons-png.flaticon.com/512/727/727590.png" },
-            { p: "BICICLETA", s: ["TA", "BI", "CLE", "CI"], i: "https://cdn-icons-png.flaticon.com/512/2972/2972185.png" }
-        ];
-
-        let index = 0;
-        const caixa = document.getElementById('caixa');
-        const img = document.getElementById('img-tarefa');
-        const btn = document.getElementById('btn-proximo');
-
-        function montar() {
-            if (index >= lista.length) {
-                document.querySelector('.card').innerHTML = "<h1 style='color: #4a90e2;'>🏆 PARABÉNS! 🏆</h1><p>Completaste o desafio das 10 palavras!</p><button onclick='location.reload()' style='padding:10px; border-radius:10px; border:none; background:#4a90e2; color:white;'>Jogar de novo</button>";
-                return;
-            }
-
-            const item = lista[index];
-            document.getElementById('contador').innerText = `DESAFIO ${index + 1} DE ${lista.length}`;
-            img.src = item.i;
-            caixa.innerHTML = '';
-            document.getElementById('area-img').classList.remove('acertou');
-            btn.style.display = 'none';
-            document.getElementById('msg').innerText = "Arraste as sílabas para formar a palavra!";
-            document.getElementById('msg').style.color = "#4a5568";
-
-            // Criar sílabas
-            item.s.forEach(s => {
-                const d = document.createElement('div');
-                d.className = 'silaba';
-                d.innerText = s;
-                caixa.appendChild(d);
-            });
-        }
-
-        new Sortable(caixa, {
-            animation: 200,
-            onEnd: () => {
-                let res = "";
-                caixa.querySelectorAll('.silaba').forEach(s => res += s.innerText);
-                if (res === lista[index].p) {
-                    caixa.querySelectorAll('.silaba').forEach(s => s.classList.add('correto'));
-                    document.getElementById('area-img').classList.add('acertou');
-                    document.getElementById('msg').innerText = "Excelente! Estás no caminho certo!";
-                    document.getElementById('msg').style.color = "#2f855a";
-                    btn.style.display = 'inline-block';
-                }
-            }
-        });
-
-        btn.onclick = () => { index++; montar(); };
-        montar();
-    </script>
-</body>
-</html>
+        #btn
