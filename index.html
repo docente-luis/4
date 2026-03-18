@@ -74,4 +74,113 @@
             { 
                 palavra: "GATO", 
                 silabas: ["TO", "GA"], // Ordem misturada
-                imagem: "
+                imagem: "https://cdn-icons-png.flaticon.com/512/616/616408.png" 
+            },
+            { 
+                palavra: "CASA", 
+                silabas: ["SA", "CA"], 
+                imagem: "https://cdn-icons-png.flaticon.com/512/619/619153.png"
+            },
+            { 
+                palavra: "PATO", 
+                silabas: ["TO", "PA"], 
+                imagem: "https://cdn-icons-png.flaticon.com/512/616/616428.png"
+            }
+        ];
+
+        // 2. Variáveis de estado do jogo
+        let atividadeAtualIndex = 0;
+        let sortableInstance;
+        const elJogo = document.getElementById('jogo');
+        const elImagem = document.getElementById('imagem-atividade');
+        const elMensagem = document.getElementById('mensagem');
+        const elFeedbackArea = document.getElementById('feedback-area');
+        const elBotaoProximo = document.getElementById('botao-proximo');
+
+        // 3. Função para carregar uma atividade
+        function carregarAtividade(index) {
+            // Verifica se o jogo acabou
+            if (index >= atividades.length) {
+                finalizarJogo();
+                return;
+            }
+
+            const dados = atividades[index];
+            
+            // Atualiza imagem
+            elImagem.src = dados.imagem;
+            elImagem.alt = dados.palavra;
+            
+            // Limpa o jogo anterior e feedback
+            elJogo.innerHTML = ''; 
+            elFeedbackArea.classList.remove('acertou');
+            elMensagem.innerText = "Arraste as sílabas para a ordem correta!";
+            elMensagem.style.color = "#666";
+            elBotaoProximo.style.display = 'none';
+
+            // Cria os elementos das sílabas
+            dados.silabas.forEach(silaba => {
+                const div = document.createElement('div');
+                div.className = 'silaba';
+                div.setAttribute('data-silaba', silaba);
+                div.innerText = silaba;
+                elJogo.appendChild(div);
+            });
+
+            // Ativa o arrastar (se já não estiver ativo)
+            if (!sortableInstance) {
+                sortableInstance = new Sortable(elJogo, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: verificarResposta // Chama a verificação ao largar
+                });
+            }
+        }
+
+        // 4. Função de verificação
+        function verificarResposta() {
+            const dados = atividades[atividadeAtualIndex];
+            
+            // Obtém a ordem atual
+            let ordemAtual = [];
+            elJogo.querySelectorAll('.silaba').forEach(silaba => {
+                ordemAtual.push(silaba.getAttribute('data-silaba'));
+            });
+
+            // Compara (Junta as sílabas e vê se dá a palavra)
+            if (ordemAtual.join('') === dados.palavra) {
+                // SE ACERTOU: Feedback visual
+                elJogo.querySelectorAll('.silaba').forEach(s => s.classList.add('correto'));
+                elFeedbackArea.classList.add('acertou');
+                elMensagem.innerText = `🎉 PARABÉNS! Formaste ${dados.palavra}! 🎉`;
+                elMensagem.style.color = "#28a745";
+                
+                // Mostra o botão para avançar (ou avança automaticamente após delay)
+                // Vamos usar um botão para dar controlo ao aluno
+                elBotaoProximo.style.display = 'inline-block';
+            }
+        }
+
+        // 5. Função para avançar
+        elBotaoProximo.addEventListener('click', () => {
+            atividadeAtualIndex++;
+            carregarAtividade(atividadeAtualIndex);
+        });
+
+        // 6. Função de fim de jogo
+        function finalizarJogo() {
+            elImagem.style.display = 'none';
+            elJogo.style.display = 'none';
+            elFeedbackArea.style.display = 'none';
+            elMensagem.innerText = "🏆 FIM DO JOGO! Completaste todas as atividades! 🏆";
+            elMensagem.style.color = "#4a90e2";
+            elMensagem.style.fontSize = "1.5rem";
+        }
+
+        // Inicia o jogo
+        carregarAtividade(atividadeAtualIndex);
+
+    </script>
+
+</body>
+</html>
