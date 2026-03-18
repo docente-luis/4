@@ -3,184 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Sílabas Sequencial</title>
+    <title>Jogo das Sílabas - Nível 2</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #eef2f3; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-width: 400px; width: 100%; position: relative; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #f0f4f8; padding: 10px; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 500px; width: 100%; }
+        .progresso { color: #aaa; font-size: 0.85rem; margin-bottom: 10px; font-weight: bold; }
+        .imagem-container { position: relative; margin-bottom: 15px; height: 140px; display: flex; justify-content: center; align-items: center; }
+        img { max-height: 130px; border-radius: 15px; transition: all 0.3s; }
+        .feedback-visual { position: absolute; font-size: 4rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 10; }
         
-        /* Área da imagem e feedback */
-        .imagem-container { position: relative; margin-bottom: 20px; }
-        img { width: 150px; border-radius: 10px; transition: opacity 0.3s; }
-        .feedback-visual { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        
-        /* Estilo das sílabas */
         .caixa-silabas { 
-            display: flex; 
-            justify-content: center; 
-            gap: 15px; 
-            min-height: 80px; 
-            padding: 10px;
-            border: 2px dashed #cbd5e0;
-            border-radius: 10px;
-            background: #f8fafc;
+            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; min-height: 70px; padding: 15px;
+            border: 3px dashed #e2e8f0; border-radius: 15px; background: #fdfdfd;
         }
         .silaba { 
-            padding: 15px 25px; 
-            background: #4a90e2; 
-            color: white; 
-            font-weight: bold; 
-            font-size: 1.2rem; 
-            border-radius: 12px; 
-            cursor: grab; 
-            user-select: none;
-            transition: transform 0.2s, background-color 0.3s;
+            padding: 12px 18px; background: #4a90e2; color: white; font-weight: bold; 
+            font-size: 1.1rem; border-radius: 10px; cursor: grab; user-select: none;
+            box-shadow: 0 4px 0 #2b6cb0; margin: 2px;
         }
 
-        /* Estados de feedback */
-        .silaba.correto { background-color: #28a745; animation: pulse 0.5s ease-in-out; }
-        .imagem-container.acertou img { opacity: 0.3; }
-        .imagem-container.acertou .feedback-visual { opacity: 1; color: #28a745; }
+        .acertou img { opacity: 0.15; filter: blur(2px); }
+        .acertou .feedback-visual { opacity: 1; color: #48bb78; transform: scale(1.2); }
+        .silaba.correto { background-color: #48bb78; box-shadow: 0 4px 0 #2f855a; transform: translateY(2px); }
         
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        #btn-proximo { 
+            display: none; margin-top: 20px; padding: 15px 40px; background: #48bb78; 
+            color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 1.2rem; font-weight: bold;
+            box-shadow: 0 4px 0 #2f855a;
         }
-        
-        .instrucao { color: #666; font-size: 0.9rem; margin-top: 20px; min-height: 1.2em; }
-        #botao-proximo { display: none; margin-top: 20px; padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+        #btn-proximo:active { transform: translateY(4px); box-shadow: none; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h3>Forma a palavra</h3>
-        
-        <div class="imagem-container" id="feedback-area">
-            <img src="" alt="Imagem da atividade" id="imagem-atividade">
-            <div class="feedback-visual">✅</div>
+        <div class="progresso" id="contador">Carregando...</div>
+        <div class="imagem-container" id="area-img">
+            <img src="" id="img-tarefa">
+            <div class="feedback-visual">🌟</div>
         </div>
         
-        <div id="jogo" class="caixa-silabas"></div>
+        <div id="caixa" class="caixa-silabas"></div>
         
-        <p class="instrucao" id="mensagem">Arraste as sílabas para a ordem correta!</p>
-        <button id="botao-proximo">Próxima Palavra ➡️</button>
+        <p id="msg" style="color: #4a5568; font-weight: 500;">Ordena as sílabas corretamente!</p>
+        <button id="btn-proximo">PRÓXIMO ➡️</button>
     </div>
 
     <script>
-        // 1. A TUA LISTA DE ATIVIDADES (Podes adicionar mais aqui!)
-        const atividades = [
-            { 
-                palavra: "GATO", 
-                silabas: ["TO", "GA"], // Ordem misturada
-                imagem: "https://cdn-icons-png.flaticon.com/512/616/616408.png" 
-            },
-            { 
-                palavra: "CASA", 
-                silabas: ["SA", "CA"], 
-                imagem: "https://cdn-icons-png.flaticon.com/512/619/619153.png"
-            },
-            { 
-                palavra: "PATO", 
-                silabas: ["TO", "PA"], 
-                imagem: "https://cdn-icons-png.flaticon.com/512/616/616428.png"
-            }
+        // LISTA DE 10 PALAVRAS (Mistura de 2, 3 e 4 sílabas)
+        const lista = [
+            { p: "GATO", s: ["TO", "GA"], i: "https://cdn-icons-png.flaticon.com/512/616/616408.png" },
+            { p: "CASA", s: ["SA", "CA"], i: "https://cdn-icons-png.flaticon.com/512/619/619153.png" },
+            { p: "GALINHA", s: ["NHA", "GA", "LI"], i: "https://cdn-icons-png.flaticon.com/512/2002/2002633.png" },
+            { p: "BOLA", s: ["LA", "BO"], i: "https://cdn-icons-png.flaticon.com/512/280/280145.png" },
+            { p: "SAPATO", s: ["TO", "PA", "SA"], i: "https://cdn-icons-png.flaticon.com/512/241/241324.png" },
+            { p: "DADO", s: ["DO", "DA"], i: "https://cdn-icons-png.flaticon.com/512/5903/5903939.png" },
+            { p: "LOCOMOTIVA", s: ["TI", "LO", "VA", "CO", "MO"], i: "https://cdn-icons-png.flaticon.com/512/2840/2840502.png" },
+            { p: "CADERNO", s: ["NO", "CA", "DER"], i: "https://cdn-icons-png.flaticon.com/512/2232/2232688.png" },
+            { p: "TELEFONE", s: ["NE", "TE", "FO", "LE"], i: "https://cdn-icons-png.flaticon.com/512/727/727590.png" },
+            { p: "BICICLETA", s: ["TA", "BI", "CLE", "CI"], i: "https://cdn-icons-png.flaticon.com/512/2972/2972185.png" }
         ];
 
-        // 2. Variáveis de estado do jogo
-        let atividadeAtualIndex = 0;
-        let sortableInstance;
-        const elJogo = document.getElementById('jogo');
-        const elImagem = document.getElementById('imagem-atividade');
-        const elMensagem = document.getElementById('mensagem');
-        const elFeedbackArea = document.getElementById('feedback-area');
-        const elBotaoProximo = document.getElementById('botao-proximo');
+        let index = 0;
+        const caixa = document.getElementById('caixa');
+        const img = document.getElementById('img-tarefa');
+        const btn = document.getElementById('btn-proximo');
 
-        // 3. Função para carregar uma atividade
-        function carregarAtividade(index) {
-            // Verifica se o jogo acabou
-            if (index >= atividades.length) {
-                finalizarJogo();
-                return;
-            }
-
-            const dados = atividades[index];
-            
-            // Atualiza imagem
-            elImagem.src = dados.imagem;
-            elImagem.alt = dados.palavra;
-            
-            // Limpa o jogo anterior e feedback
-            elJogo.innerHTML = ''; 
-            elFeedbackArea.classList.remove('acertou');
-            elMensagem.innerText = "Arraste as sílabas para a ordem correta!";
-            elMensagem.style.color = "#666";
-            elBotaoProximo.style.display = 'none';
-
-            // Cria os elementos das sílabas
-            dados.silabas.forEach(silaba => {
-                const div = document.createElement('div');
-                div.className = 'silaba';
-                div.setAttribute('data-silaba', silaba);
-                div.innerText = silaba;
-                elJogo.appendChild(div);
-            });
-
-            // Ativa o arrastar (se já não estiver ativo)
-            if (!sortableInstance) {
-                sortableInstance = new Sortable(elJogo, {
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    onEnd: verificarResposta // Chama a verificação ao largar
-                });
-            }
-        }
-
-        // 4. Função de verificação
-        function verificarResposta() {
-            const dados = atividades[atividadeAtualIndex];
-            
-            // Obtém a ordem atual
-            let ordemAtual = [];
-            elJogo.querySelectorAll('.silaba').forEach(silaba => {
-                ordemAtual.push(silaba.getAttribute('data-silaba'));
-            });
-
-            // Compara (Junta as sílabas e vê se dá a palavra)
-            if (ordemAtual.join('') === dados.palavra) {
-                // SE ACERTOU: Feedback visual
-                elJogo.querySelectorAll('.silaba').forEach(s => s.classList.add('correto'));
-                elFeedbackArea.classList.add('acertou');
-                elMensagem.innerText = `🎉 PARABÉNS! Formaste ${dados.palavra}! 🎉`;
-                elMensagem.style.color = "#28a745";
-                
-                // Mostra o botão para avançar (ou avança automaticamente após delay)
-                // Vamos usar um botão para dar controlo ao aluno
-                elBotaoProximo.style.display = 'inline-block';
-            }
-        }
-
-        // 5. Função para avançar
-        elBotaoProximo.addEventListener('click', () => {
-            atividadeAtualIndex++;
-            carregarAtividade(atividadeAtualIndex);
-        });
-
-        // 6. Função de fim de jogo
-        function finalizarJogo() {
-            elImagem.style.display = 'none';
-            elJogo.style.display = 'none';
-            elFeedbackArea.style.display = 'none';
-            elMensagem.innerText = "🏆 FIM DO JOGO! Completaste todas as atividades! 🏆";
-            elMensagem.style.color = "#4a90e2";
-            elMensagem.style.fontSize = "1.5rem";
-        }
-
-        // Inicia o jogo
-        carregarAtividade(atividadeAtualIndex);
-
-    </script>
-
-</body>
-</html>
+        function montar() {
+            if (index >= lista.length) {
+                document.querySelector('.card').innerHTML = "<h1 style='color: #4a90e2;'>🏆 PARABÉNS! 🏆</h1><p>
